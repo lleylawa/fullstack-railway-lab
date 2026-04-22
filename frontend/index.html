@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevOps Lab</title>
+</head>
+<body>
+    <h1>Студент: Ваше Имя (ID: 12345)</h1>
+    <input id="nameInput" placeholder="Введите данные">
+    <button onclick="addData()">Добавить</button>
+    <ul id="list"></ul>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : ''; // Здесь будет URL бэкенда из переменных окружения
+
+        async function loadData() {
+            const res = await fetch(`${API_URL}/api/data`);
+            const data = await res.json();
+            document.getElementById('list').innerHTML = data.map(i => `<li>${i.name}</li>`).join('');
+        }
+        
+        async function addData() {
+            const name = document.getElementById('nameInput').value;
+            await fetch(`${API_URL}/api/data`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            loadData();
+        }
+        loadData();
+    </script>
+</body>
+</html>
