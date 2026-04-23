@@ -1,32 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevOps Lab</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 10px; }
+        input { padding: 10px; width: 70%; border-radius: 5px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; cursor: pointer; background: #5e5ce6; color: white; border: none; border-radius: 5px; }
+        li { background: #f4f4f4; margin: 5px 0; padding: 10px; border-radius: 5px; list-style: none; }
+    </style>
 </head>
 <body>
-    <h1>Студент: Ваше Имя (ID: 12345)</h1>
-    <input id="nameInput" placeholder="Введите данные">
-    <button onclick="addData()">Добавить</button>
-    <ul id="list"></ul>
+    <div class="container">
+        <h1>Студент: Лейла (ID: 12345)</h1>
+        <div style="margin-bottom: 20px;">
+            <input id="nameInput" placeholder="Введите название задачи...">
+            <button onclick="addData()">Добавить</button>
+        </div>
+        <h3>Список данных из PostgreSQL:</h3>
+        <ul id="list" style="padding: 0;"></ul>
+    </div>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:5000' 
-            : ''; // Здесь будет URL бэкенда из переменных окружения
+        // Railway подставляет VITE_API_URL, но для безопасности добавим проверку
+        const API_URL = ""; // Оставляем пустым, так как мы используем относительный путь или переменные
 
         async function loadData() {
-            const res = await fetch(`${API_URL}/api/data`);
-            const data = await res.json();
-            document.getElementById('list').innerHTML = data.map(i => `<li>${i.name}</li>`).join('');
+            try {
+                const res = await fetch(`/api/data`); // Проксируем через домен или используем полный URL
+                const data = await res.json();
+                const list = document.getElementById('list');
+                list.innerHTML = data.length === 0 ? '<li>Пока нет данных</li>' : data.map(i => `<li>ID ${i.id}: ${i.name}</li>`).join('');
+            } catch (e) {
+                console.error("Ошибка загрузки:", e);
+            }
         }
         
         async function addData() {
-            const name = document.getElementById('nameInput').value;
-            await fetch(`${API_URL}/api/data`, {
+            const input = document.getElementById('nameInput');
+            const name = input.value;
+            if(!name) return;
+            
+            await fetch(`/api/data`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({name})
             });
+            input.value = '';
             loadData();
         }
         loadData();
