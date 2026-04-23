@@ -3,63 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevOps Lab</title>
+    <title>DevOps Lab - Лейла</title>
     <style>
-        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
-        .container { max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 10px; }
-        input { padding: 10px; width: 70%; border-radius: 5px; border: 1px solid #ddd; }
-        button { padding: 10px 20px; cursor: pointer; background: #5e5ce6; color: white; border: none; border-radius: 5px; }
-        li { background: #f4f4f4; margin: 5px 0; padding: 10px; border-radius: 5px; list-style: none; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f7f6; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 450px; 
+        }
+        h1 { color: #2c3e50; font-size: 22px; margin-bottom: 25px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { 
+            flex: 1; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            outline: none; 
+            font-size: 14px;
+        }
+        button { 
+            padding: 12px 18px; 
+            background: #4a90e2; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.3s; 
+        }
+        button:hover { background: #357abd; }
+        ul { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; }
+        li { 
+            background: #fff; 
+            border: 1px solid #edf2f7;
+            margin-bottom: 8px;
+            padding: 12px; 
+            border-radius: 8px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .id-badge { background: #e2e8f0; color: #4a5568; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Студент: Лейла (ID: 12345)</h1>
-        <div style="margin-bottom: 20px;">
-            <input id="nameInput" placeholder="Введите название задачи...">
+    <div class="card">
+        <h1>Студент: Лейла</h1>
+        <div class="input-group">
+            <input type="text" id="nameInput" placeholder="Введите название задачи...">
             <button onclick="addData()">Добавить</button>
         </div>
-        <h3>Список данных из PostgreSQL:</h3>
-        <ul id="list" style="padding: 0;"></ul>
+        <ul id="list"></ul>
     </div>
 
     <script>
-    // Пытаемся получить URL бэкенда из переменной окружения (которую вы добавили в Railway)
-    // Если она не задана, используем пустую строку (предполагая, что они на одном домене)
-    // ВАЖНО: На Railway это должна быть полная ссылка https://...
-    const API_URL = https://fullstack-railway-lab-production.up.railway.app/api/data
+        // ВСТАВЬТЕ ВАШУ ССЫЛКУ НИЖЕ (которая выдает [])
+        const API_URL = "const API_URL = https://fullstack-railway-lab-production.up.railway.app/api/data"; 
 
-    async function loadData() {
-        try {
-            const res = await fetch(`${API_URL}/api/data`);
-            if (!res.ok) throw new Error('Ошибка сети');
-            const data = await res.json();
+        async function loadData() {
             const list = document.getElementById('list');
-            list.innerHTML = data.length === 0 ? '<li>Список пуст</li>' : data.map(i => `<li>ID ${i.id}: ${i.name}</li>`).join('');
-        } catch (e) {
-            console.error("Ошибка:", e);
-            document.getElementById('list').innerHTML = '<li>Ошибка подключения к API</li>';
+            try {
+                const res = await fetch(`${API_URL}/api/data`);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<li style="color: #a0aec0; justify-content: center;">Список пуст</li>';
+                    return;
+                }
+                
+                list.innerHTML = data.map(i => `
+                    <li>
+                        <span>${i.name}</span>
+                        <span class="id-badge">ID: ${i.id}</span>
+                    </li>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = '<li style="color: #e53e3e; justify-content: center;">Ошибка подключения к API</li>';
+            }
         }
-    }
-    
-    async function addData() {
-        const input = document.getElementById('nameInput');
-        const name = input.value;
-        if(!name) return;
-        
-        try {
-            await fetch(`${API_URL}/api/data`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name})
-            });
-            input.value = '';
-            loadData();
-        } catch (e) {
-            alert("Не удалось отправить данные");
+
+        async function addData() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            if (!name) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    loadData();
+                } else {
+                    alert("Ошибка при сохранении");
+                }
+            } catch (e) {
+                alert("API недоступно");
+            }
         }
-    }
-    loadData();
-</script>
+
+        // Загружаем данные при открытии страницы
+        loadData();
+    </script>
 </body>
 </html>
