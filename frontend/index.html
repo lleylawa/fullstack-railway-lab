@@ -24,34 +24,42 @@
     </div>
 
     <script>
-        // Railway подставляет VITE_API_URL, но для безопасности добавим проверку
-        const API_URL = ""; // Оставляем пустым, так как мы используем относительный путь или переменные
+    // Пытаемся получить URL бэкенда из переменной окружения (которую вы добавили в Railway)
+    // Если она не задана, используем пустую строку (предполагая, что они на одном домене)
+    // ВАЖНО: На Railway это должна быть полная ссылка https://...
+    const API_URL = "[https://fullstack-railway-lab-production-XXXX.up.railway.app](https://fullstack-railway-lab-production-XXXX.up.railway.app)"; // ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ ИЗ ШАГА 3 (Бэкенд)
 
-        async function loadData() {
-            try {
-                const res = await fetch(`/api/data`); // Проксируем через домен или используем полный URL
-                const data = await res.json();
-                const list = document.getElementById('list');
-                list.innerHTML = data.length === 0 ? '<li>Пока нет данных</li>' : data.map(i => `<li>ID ${i.id}: ${i.name}</li>`).join('');
-            } catch (e) {
-                console.error("Ошибка загрузки:", e);
-            }
+    async function loadData() {
+        try {
+            const res = await fetch(`${API_URL}/api/data`);
+            if (!res.ok) throw new Error('Ошибка сети');
+            const data = await res.json();
+            const list = document.getElementById('list');
+            list.innerHTML = data.length === 0 ? '<li>Список пуст</li>' : data.map(i => `<li>ID ${i.id}: ${i.name}</li>`).join('');
+        } catch (e) {
+            console.error("Ошибка:", e);
+            document.getElementById('list').innerHTML = '<li>Ошибка подключения к API</li>';
         }
+    }
+    
+    async function addData() {
+        const input = document.getElementById('nameInput');
+        const name = input.value;
+        if(!name) return;
         
-        async function addData() {
-            const input = document.getElementById('nameInput');
-            const name = input.value;
-            if(!name) return;
-            
-            await fetch(`/api/data`, {
+        try {
+            await fetch(`${API_URL}/api/data`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({name})
             });
             input.value = '';
             loadData();
+        } catch (e) {
+            alert("Не удалось отправить данные");
         }
-        loadData();
-    </script>
+    }
+    loadData();
+</script>
 </body>
 </html>
